@@ -71,7 +71,7 @@ Add this dependency to your project's build file:
   }
 
   dependencies {
-     implementation "io.github.erkoristhein.mailchimp:mailchimp-transactional-api-java:1.0.55"
+    implementation 'com.github.ErkoRisthein:mailchimp-transactional-api-java:1.0.55'
   }
 ```
 
