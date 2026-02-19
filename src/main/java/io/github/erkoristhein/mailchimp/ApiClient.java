@@ -220,10 +220,7 @@ public class ApiClient extends JavaTimeFormatter {
      * @return ApiClient this client
      */
     public ApiClient addDefaultHeader(String name, String value) {
-        if (defaultHeaders.containsKey(name)) {
-            defaultHeaders.remove(name);
-        }
-        defaultHeaders.add(name, value);
+        defaultHeaders.set(name, value);
         return this;
     }
 
@@ -602,7 +599,7 @@ public class ApiClient extends JavaTimeFormatter {
             finalUri += "?" + queryUri;
         }
         String expandedPath = this.expandPath(finalUri, uriParams);
-        final UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl(basePath).path(expandedPath);
+        final UriComponentsBuilder builder = UriComponentsBuilder.fromUriString(basePath).path(expandedPath);
 
         URI uri;
         try {
@@ -611,7 +608,7 @@ public class ApiClient extends JavaTimeFormatter {
             throw new RestClientException("Could not build URL: " + builder.toUriString(), ex);
         }
 
-        final BodyBuilder requestBuilder = RequestEntity.method(method, UriComponentsBuilder.fromHttpUrl(basePath).toUriString() + finalUri, uriParams);
+        final BodyBuilder requestBuilder = RequestEntity.method(method, UriComponentsBuilder.fromUriString(basePath).toUriString() + finalUri, uriParams);
         if (accept != null) {
             requestBuilder.accept(accept.toArray(new MediaType[accept.size()]));
         }
@@ -671,14 +668,13 @@ public class ApiClient extends JavaTimeFormatter {
      * @param requestBuilder The current request
      */
     protected void addHeadersToRequest(HttpHeaders headers, BodyBuilder requestBuilder) {
-        for (Entry<String, List<String>> entry : headers.entrySet()) {
-            List<String> values = entry.getValue();
+        headers.forEach((name, values) -> {
             for (String value : values) {
                 if (value != null) {
-                    requestBuilder.header(entry.getKey(), value);
+                    requestBuilder.header(name, value);
                 }
             }
-        }
+        });
     }
 
     /**
@@ -774,14 +770,14 @@ public class ApiClient extends JavaTimeFormatter {
                 return "";
             }
             StringBuilder builder = new StringBuilder();
-            for (Entry<String, List<String>> entry : headers.entrySet()) {
-                builder.append(entry.getKey()).append("=[");
-                for (String value : entry.getValue()) {
+            headers.forEach((name, values) -> {
+                builder.append(name).append("=[");
+                for (String value : values) {
                     builder.append(value).append(",");
                 }
                 builder.setLength(builder.length() - 1); // Get rid of trailing comma
                 builder.append("],");
-            }
+            });
             builder.setLength(builder.length() - 1); // Get rid of trailing comma
             return builder.toString();
         }
